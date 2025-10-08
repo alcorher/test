@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Management Quiz</title>
+    <title>Cuestionario de Gestión Empresarial</title>
     <style>
         * {
             box-sizing: border-box;
@@ -25,7 +25,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 800px;
-            margin: 0 auto;
+            margin: 20px auto;
             overflow: hidden;
         }
 
@@ -39,6 +39,21 @@
             font-size: 0.85em;
             opacity: 0.9;
             margin-bottom: 8px;
+        }
+
+        #live-score {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 8px;
+            margin-top: 8px;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #live-score span {
+            font-weight: bold;
         }
 
         h2 {
@@ -58,7 +73,7 @@
 
         #options-container {
             list-style-type: none;
-            padding: 0 15px 20px;
+            padding: 15px 15px 20px;
             margin: 0;
         }
 
@@ -236,7 +251,7 @@
             }
 
             #options-container {
-                padding: 0 10px 15px;
+                padding: 15px 10px 15px;
             }
 
             .option {
@@ -396,6 +411,10 @@
         <div id="quiz-header">
             <p id="question-counter"></p>
             <h2 id="question-text">Loading question...</h2>
+            <div id="live-score">
+                <span>Puntuación: <span id="current-score">0</span>/<span id="questions-answered">0</span></span>
+                <span id="current-percentage">0%</span>
+            </div>
         </div>
         
         <ul id="options-container">
@@ -403,7 +422,7 @@
 
         <div id="feedback"></div>
 
-        <button id="next-btn" onclick="nextQuestion()">Next Question</button>
+        <button id="next-btn" onclick="nextQuestion()">Siguiente Pregunta</button>
 
         <div id="results-container" style="display: none;">
             <h2>¡Quiz Completado!</h2>
@@ -959,13 +978,29 @@
         const resultsContainer = document.getElementById('results-container');
         const scoreTextElement = document.getElementById('score-text');
 
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !nextBtn.disabled && quizContainer.style.display === 'block') {
+                if (nextBtn.innerHTML === "Siguiente Pregunta" || nextBtn.innerHTML === "Mostrar Resultados") {
+                    nextQuestion();
+                } else if (nextBtn.innerHTML === "Reiniciar Cuestionario") {
+                    restartQuiz();
+                }
+            }
+        });
+
         function startQuiz() {
             shuffledQuestions = quizData.sort(() => Math.random() - 0.5);
             currentQuestionIndex = 0;
             score = 0;
             resultsContainer.style.display = 'none';
             quizContainer.style.display = 'block';
-            nextBtn.innerHTML = "Next Question";
+            nextBtn.innerHTML = "Siguiente Pregunta";
+            
+            // Initialize live score
+            document.getElementById('current-score').innerText = '0';
+            document.getElementById('questions-answered').innerText = '0';
+            document.getElementById('current-percentage').innerText = '0%';
+            
             loadQuestion();
         }
         
@@ -975,7 +1010,7 @@
             
             const currentQuestion = shuffledQuestions[currentQuestionIndex];
             questionTextElement.innerText = currentQuestion.question;
-            questionCounterElement.innerText = `Question ${currentQuestionIndex + 1} of ${shuffledQuestions.length}`;
+            questionCounterElement.innerText = `Pregunta ${currentQuestionIndex + 1} de ${shuffledQuestions.length}`;
 
             optionsContainer.innerHTML = '';
             currentQuestion.options.forEach(option => {
@@ -1001,12 +1036,12 @@
 
             if (selectedOption === correctOption) {
                 selectedElement.classList.add('correct');
-                feedbackElement.innerText = "Correct!";
+                feedbackElement.innerText = "¡Correcto!";
                 feedbackElement.style.color = "#155724";
                 score++;
             } else {
                 selectedElement.classList.add('incorrect');
-                feedbackElement.innerText = `Wrong! The correct answer was: ${correctOption}`;
+                feedbackElement.innerText = `¡Incorrecto! La respuesta correcta era: ${correctOption}`;
                 feedbackElement.style.color = "#721c24";
                 // Also highlight the correct answer
                  Array.from(options).forEach(option => {
@@ -1016,13 +1051,26 @@
                 });
             }
             
+            // Update live score
+            updateLiveScore();
+            
             nextBtn.disabled = false;
             if (currentQuestionIndex === shuffledQuestions.length - 1) {
-                nextBtn.innerHTML = "Show Results";
+                nextBtn.innerHTML = "Mostrar Resultados";
             }
         }
 
+        function updateLiveScore() {
+            const questionsAnswered = currentQuestionIndex + 1;
+            const percentage = questionsAnswered > 0 ? Math.round((score / questionsAnswered) * 100) : 0;
+            
+            document.getElementById('current-score').innerText = score;
+            document.getElementById('questions-answered').innerText = questionsAnswered;
+            document.getElementById('current-percentage').innerText = percentage + '%';
+        }
+
         function nextQuestion() {
+            if (currentQuestionIndex >= shuffledQuestions.length) return;
             currentQuestionIndex++;
             if (currentQuestionIndex < shuffledQuestions.length) {
                 loadQuestion();
@@ -1032,18 +1080,25 @@
         }
 
         function showResults() {
-             quizContainer.style.display = 'none';
-             resultsContainer.style.display = 'block';
-             
              const totalQuestions = shuffledQuestions.length;
              const incorrectAnswers = totalQuestions - score;
              const percentage = Math.round((score / totalQuestions) * 100);
              
-             scoreTextElement.innerText = `Puntuación: ${score}/${totalQuestions}`;
-             document.getElementById('percentage-text').innerText = `Porcentaje: ${percentage}%`;
-             document.getElementById('correct-count').innerText = score;
-             document.getElementById('incorrect-count').innerText = incorrectAnswers;
-             document.getElementById('total-count').innerText = totalQuestions;
+             questionTextElement.innerText = "¡Cuestionario Completado!";
+             questionCounterElement.innerText = "";
+             feedbackElement.innerText = "";
+             optionsContainer.innerHTML = `
+                 <div id="finish-summary" style="text-align: center; padding: 20px;">
+                     <h3>Resumen de Resultados</h3>
+                     <p>Puntuación: ${score}/${totalQuestions}</p>
+                     <p>Porcentaje: ${percentage}%</p>
+                     <p>Respuestas Correctas: ${score}</p>
+                     <p>Respuestas Incorrectas: ${incorrectAnswers}</p>
+                 </div>
+             `;
+             nextBtn.innerHTML = "Reiniciar Cuestionario";
+             nextBtn.onclick = restartQuiz;
+             nextBtn.disabled = false;
         }
 
         function restartQuiz() {
