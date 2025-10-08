@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Management Quiz</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #quiz-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            overflow: hidden;
+        }
+
+        #quiz-header {
+            background-color: #4a69bd;
+            color: white;
+            padding: 20px;
+        }
+
+        #question-counter {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.4em;
+        }
+
+        #question-text {
+            padding: 20px;
+            font-size: 1.2em;
+            min-height: 60px;
+        }
+
+        #options-container {
+            list-style-type: none;
+            padding: 0 20px 20px;
+            margin: 0;
+        }
+
+        .option {
+            background-color: #f1f1f1;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .option:hover {
+            background-color: #e9e9e9;
+            border-color: #4a69bd;
+        }
+        
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            font-weight: bold;
+        }
+
+        #feedback {
+            padding: 0 20px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        #next-btn {
+            display: block;
+            width: calc(100% - 40px);
+            padding: 15px;
+            margin: 0 20px 20px;
+            background-color: #4a69bd;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        #next-btn:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+
+        #next-btn:hover:not(:disabled) {
+            background-color: #3b539a;
+        }
+
+        #results-container {
+            padding: 20px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container">
+        <div id="quiz-header">
+            <p id="question-counter"></p>
+            <h2 id="question-text">Loading question...</h2>
+        </div>
+        
+        <ul id="options-container">
+        </ul>
+
+        <div id="feedback"></div>
+
+        <button id="next-btn" onclick="nextQuestion()">Next Question</button>
+
+        <div id="results-container" style="display: none;">
+            <h2>Quiz Complete!</h2>
+            <p id="score-text"></p>
+            <button onclick="restartQuiz()">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "¿Cuál de estos NO es un subnivel de empresa?",
+                options: ["Finanzas", "Marketing y operaciones", "Gestión de compra", "Innovación"],
+                correct: "Gestión de compra"
+            },
+            {
+                question: "¿Qué significa ERP?",
+                options: ["Enterprise Resource Planning", "Enterprise Rescue Project", "Enterprise Replay Physics", "Ecological Reform Plan"],
+                correct: "Enterprise Resource Planning"
+            },
+            {
+                question: "¿Cuál de estas NO es una actividad de Finanzas?",
+                options: ["Realización de contabilidad empresarial", "Localización de fuentes financieras e inversiones", "Realizar la organización de la caja fuerte", "Análisis y previsión de resultados"],
+                correct: "Realizar la organización de la caja fuerte"
+            },
+            {
+                question: "Pensando a futuro, ¿Cuál de estos subniveles es el más importante en una empresa?",
+                options: ["Innovación", "Finanzas", "Marketing y operaciones", "Gestión de Personal"],
+                correct: "Innovación"
+            },
+            {
+                question: "¿Qué es la Gestión Empresarial?",
+                options: ["Hace referencia a un conjunto de procesos y técnicas desarrollada en años", "Hace referencia a un conjunto de técnicas desarrollada en años", "Hace referencia a un conjunto de técnicas desarrollada en meses", "Hace referencia a un conjunto de procesos desarrollada en años"],
+                correct: "Hace referencia a un conjunto de procesos y técnicas desarrollada en años"
+            },
+            {
+                question: "¿Cuál No es una principal característica de la gestión empresarial?",
+                options: ["Una empresa existe siempre y cuando obtenga beneficios.", "Una empresa debe gestionar bien sus recursos para ser competitiva.", "El principal objetivo de la empresa es el cliente.", "Una empresa debe tener competencia"],
+                correct: "Una empresa debe tener competencia"
+            },
+            {
+                question: "¿Qué arquitectura usa ERP?",
+                options: ["Arquitectura Dual", "Arquitectura Modular", "Arquitectura Boiler", "Arquitectura Contemporánea"],
+                correct: "Arquitectura Modular"
+            },
+            {
+                question: "¿Qué significa CRM?",
+                options: ["Customer Relationship Management", "Customer Relation Main", "Client Red Maintenance", "Cross Relationship Management"],
+                correct: "Customer Relationship Management"
+            },
+            {
+                question: "¿Qué ideas debe tener claras el empresario?",
+                options: ["Tener en cuenta el tamaño de la empresa y hacerla crecer en su medida correcta para obtener aumento de rentabilidad.", "El objetivo principal de la producción será siempre el beneficio sin prestar atención al cliente.", "Tener en cuenta el tamaño de la empresa y hacerla crecer cuanto más mejor.", "Mirar siempre para el cliente indistintamente si se pierden beneficios."],
+                correct: "Tener en cuenta el tamaño de la empresa y hacerla crecer en su medida correcta para obtener aumento de rentabilidad."
+            },
+            {
+                question: "¿Qué tarea NO engloba la Gestión de personal?",
+                options: ["Acciones de selección de personal.", "Desarrollo de sus capacidades y habilidades.", "Desarrollar una vida plena", "Asignación a puestos de trabajo"],
+                correct: "Desarrollar una vida plena"
+            },
+            {
+                question: "¿Cuáles son las Fases de Innovación?",
+                options: ["Definición de objetivos, Nuevas ideas, Clasificación, Selección de ideas, Ejecución del proyecto y Explotación del resultado.", "Definición de objetivos, Nuevas ideas, Clasificacion, Selección de ideas, Anteproyecto, Selección de innovación, Ejecución del proyecto y Explotación del resultado.", "Definición de objetivos, Marketing, Lluvia de ideas, Selección de ideas, Ejecución de la idea y Explotación del resultado.", "Estrategia, Gestión de personal, Finanzas, Operaciones, Marketing y Innovacion."],
+                correct: "Definición de objetivos, Nuevas ideas, Clasificacion, Selección de ideas, Anteproyecto, Selección de innovación, Ejecución del proyecto y Explotación del resultado."
+            },
+            {
+                question: "¿Qué es un Presupuesto?",
+                options: ["Documento que planifica todo el gasto financiero de la empresa", "Dinero concedido a la empresa por parte de los bancos", "Documento que planifica ganancias futuras.", "Documento que muestra las ganancias de la empresa"],
+                correct: "Documento que planifica todo el gasto financiero de la empresa"
+            },
+            {
+                question: "¿Qué área es considerada la más importante para la supervivencia futura de la empresa?",
+                options: ["Innovación", "Marketing", "Finanzas", "Gestión de personal"],
+                correct: "Innovación"
+            },
+            {
+                question: "¿Cuál es el principal objetivo de la producción en una empresa?",
+                options: ["Maximizar la rentabilidad sin importar los recursos", "Satisfacer al cliente, enfocando departamentos en el cliente", "Reducir los costos de producción a toda costa", "Aumentar la inversión en tecnología"],
+                correct: "Satisfacer al cliente, enfocando departamentos en el cliente"
+            },
+            {
+                question: "¿Cuál es el propósito de un ERP?",
+                options: ["Gestionar la relación con los clientes", "Automatizar y unificar los procesos empresariales", "Controlar el inventario", "Realizar campañas de marketing"],
+                correct: "Automatizar y unificar los procesos empresariales"
+            },
+            {
+                question: "En la Planificación y Gestión del Personal. En la Gestión por Competencias cuál es la afirmación incorrecta:",
+                options: ["Se basa en fijar unas competencias a cada empleado que deben ser acordes a su puesto", "Estas competencias se fijan en base a motivación, carácter, capacidad, conocimiento y conducta", "Cada persona no tiene por que aportar lo mejor de sí a la empresa", "La importancia está en el factor humano"],
+                correct: "Cada persona no tiene por que aportar lo mejor de sí a la empresa"
+            },
+            {
+                question: "¿Cuál no es un componente básico de la gestión empresarial?",
+                options: ["Estrategia.", "Innovación.", "Finanzas.", "Contabilidad."],
+                correct: "Contabilidad."
+            },
+            {
+                question: "¿Cuál de las siguientes definiciones podríamos atribuirle a Fondo de Maniobra?",
+                options: ["Documento que planifica todo el gasto financiero de la empresa.", "Instantánea de situación financiera de la empresa en un momento en concreto.", "Diferencia entre activo circulante y pasivo circulante.", "Resumen dinámico de rentabilidad de cada área de negocio."],
+                correct: "Diferencia entre activo circulante y pasivo circulante."
+            },
+            {
+                question: "¿Qué significa la sigla ERP en el contexto de la gestión empresarial?",
+                options: ["Ejecución Rápida de Proyectos", "Estructura de Recursos del Personal", "Sistema de planificación de recursos empresariales", "Evaluación de Rendimiento Productivo"],
+                correct: "Sistema de planificación de recursos empresariales"
+            },
+            {
+                question: "¿Cuál es el enfoque principal de un sistema CRM?",
+                options: ["Optimización de la producción y la logística orientado a recursos humanos.", "Gestión de las relaciones con el cliente.", "Cliente Relación Métrica", "Administración de los proyectos internos."],
+                correct: "Gestión de las relaciones con el cliente."
+            },
+            {
+                question: "¿Qué busca la Gestión Empresarial?",
+                options: ["Reducir costos.", "Mejorar la productividad y la competitividad de una empresa o negocio.", "Automatizar todos los procesos.", "Aumentar el beneficio mediante despidos."],
+                correct: "Mejorar la productividad y la competitividad de una empresa o negocio."
+            },
+            {
+                question: "Dentro de la gestión empresarial de una empresa, ¿Qué representa la misión de una empresa?",
+                options: ["La imagen futura de la empresa a la que queremos llegar.", "Las reglas y fundamentos que regulan el comportamiento de las personas.", "El propósito para el que se ha construido la empresa.", "Un plan coherente que integra objetivos, políticas y acciones."],
+                correct: "El propósito para el que se ha construido la empresa."
+            },
+            {
+                question: "¿Qué ventaja aporta la gestión por competencias en los recursos humanos?",
+                options: ["Permite una mejora significativa en la gestión de recursos humanos, simplificando su gestión y organización.", "Elimina la necesidad de definir las competencias de cada puesto de trabajo.", "Sustituye completamente la decisión de la dirección en la asignación de competencias.", "Garantiza que todos los empleados estén cualificados para cualquier puesto independientemente de cual sea."],
+                correct: "Permite una mejora significativa en la gestión de recursos humanos, simplificando su gestión y organización."
+            },
+            {
+                question: "¿Cuál de las siguientes actividades pertenece al área de Finanzas dentro de la gestión empresarial?",
+                options: ["Creación de políticas de créditos a clientes.", "Planificación de la producción y control de inventarios.", "Gestión de campañas publicitarias y ventas.", "Selección y contratación de personal."],
+                correct: "Creación de políticas de créditos a clientes."
+            },
+            {
+                question: "¿Cuándo se desarrollaron los primeros sistemas informáticos?",
+                options: ["60s", "70s", "80s", "90s"],
+                correct: "60s"
+            },
+             {
+                question: "¿Cuándo fue la primera aparición de los ERP II?",
+                options: ["Década de los 80", "Década de los 90", "Década de los 00", "La actualidad"],
+                correct: "Década de los 00"
+            },
+            {
+                question: "¿Qué significa MRP?",
+                options: ["Material Requirement Planning", "Material Recycling Process", "Modular Resource Projection", "Machine Recording Predictor"],
+                correct: "Material Requirement Planning"
+            },
+            {
+                question: "¿Qué sistema no aparece implementado en el Sistema de Producción?",
+                options: ["Evolución.", "Arrastre (pull).", "Empuje (push).", "Aplazamiento."],
+                correct: "Evolución."
+            },
+            {
+                question: "¿En qué década aparecen los primeros ERP?",
+                options: ["80", "70", "90", "2000"],
+                correct: "80"
+            },
+            {
+    question: "¿Cuáles son los puntos de vista?",
+    options: ["Investigación fáctica", "Ninguna", "Investigación de actitudes", "La primera y la tercera"],
+    correct: "La primera y la tercera"
+},
+{
+    question: "¿Cuál NO es parte del plan estratégico?",
+    options: ["Campo de actividad", "Vector de crecimiento", "Ventaja competitiva", "Efecto calisténico"],
+    correct: "Efecto calisténico"
+},
+{
+    question: "¿Cuáles son los factores del entorno de la empresa?",
+    options: ["Macroentorno y Microentorno", "Entorno de red y Entorno medioambiental", "Microentorno y entorno diplomático", "Macroentorno y Entorno de red"],
+    correct: "Macroentorno y Microentorno"
+},
+{
+    question: "¿Cuál NO es un factor a tener en cuenta para el producto?",
+    options: ["Publicidad", "Canales de distribución", "Precio", "Facilidad de limpieza"],
+    correct: "Publicidad"
+},
+{
+    question: "¿Cómo se llaman los factores que afectan individualmente a tu empresa?",
+    options: ["Macroentorno", "Entorno Local", "Microentorno", "Minientorno"],
+    correct: "Microentorno"
+},
+{
+    question: "¿Cuál de estos no es un factor de macroentorno?",
+    options: ["Factor tecnológico", "Factor judicial", "Factor sociocultural", "Factor demográfico"],
+    correct: "Factor judicial"
+},
+{
+    question: "¿Cuáles son los 3 elementos claves en los 70 en la evolución de la informática de gestión empresarial?",
+    options: [
+        "Plan maestro de producción (MPS/PMP), Lista de materiales (BO), Registros de inventarios (FRI)",
+        "Plan maestro de producción (MPS/PMP) y Registros de inventarios (FRI)",
+        "Plan maestro de producción (MPS/PMP), componentes necesarios y en qué momento se necesitan",
+        "Plan maestro de producción (MPS/PMP), Lista de materiales (BO), Registros financieros"
+    ],
+    correct: "Plan maestro de producción (MPS/PMP), Lista de materiales (BO), Registros de inventarios (FRI)"
+},
+{
+    question: "¿Qué sistema no aparece implementado en el Sistema de Producción?",
+    options: ["Evolución", "Arrastre (pull)", "Empuje (push)", "Aplazamiento"],
+    correct: "Evolución"
+},
+{
+    question: "¿Qué significa MRP?",
+    options: ["Material Requirement Planning", "Material Recycling Process", "Modular Resource Projection", "Machine Recording Predictor"],
+    correct: "Material Requirement Planning"
+},
+{
+    question: "¿Qué significa las siglas JIT?",
+    options: ["Justo a tiempo", "Jamón Ibérico del Tiempo", "Junta de Inversiones y Tesorería", "Java Internal Tools"],
+    correct: "Justo a tiempo"
+},
+{
+    question: "¿Cuál es el objetivo principal del marketing?",
+    options: [
+        "Detectar necesidades de los usuarios para encontrar productos que las satisfagan",
+        "Detectar productos defectuosos",
+        "Detectar falta de stock y reabastecerse",
+        "Detectar necesidades para encontrar empresas que las satisfagan"
+    ],
+    correct: "Detectar necesidades de los usuarios para encontrar productos que las satisfagan"
+},
+{
+    question: "¿Qué caracteriza al método de producción por arrastre (pull)?",
+    options: [
+        "Se reemplaza únicamente lo que se ha consumido",
+        "Se produce según previsiones de demanda",
+        "Se acumula stock por errores de cálculo",
+        "Se trasladan operaciones al almacén"
+    ],
+    correct: "Se reemplaza únicamente lo que se ha consumido"
+},
+{
+    question: "¿Cuál es la función principal del Cuadro de Mando Integral (CMI) en la gestión de personas?",
+    options: [
+        "Aportar información sobre cómo los empleados cumplen los objetivos del plan estratégico",
+        "Definir misión, visión y valores",
+        "Eliminar la comunicación entre departamentos",
+        "Sustituir la estrategia empresarial"
+    ],
+    correct: "Aportar información sobre cómo los empleados cumplen los objetivos del plan estratégico"
+},
+{
+    question: "¿Cuál NO es un proceso interno o externo?",
+    options: [
+        "Gestión de clientes (CRM)",
+        "Gestión de la cadena de Suministros (SCM)",
+        "Gestión de relaciones con los proveedores (SRM)",
+        "Gestión de la relaciones con la cadena de suministro (GRCS)"
+    ],
+    correct: "Gestión de la relaciones con la cadena de suministro (GRCS)"
+},
+{
+    question: "¿Cuál es una característica del ERP?",
+    options: ["Integración", "Desarrollo", "Creación", "Optimización"],
+    correct: "Integración"
+},
+{
+    question: "¿Cuál de estos ERPs es alemán y de los 70s?",
+    options: ["SAP", "Oracle", "Open Bravo", "Microsoft"],
+    correct: "SAP"
+},
+{
+    question: "¿Qué significa MVC de OpenERP?",
+    options: ["Modelo Vista Controlador", "Manual de Vista Cooperativa", "Microentorno Visual Correlativo", "Manual de Ventas Confirmadas"],
+    correct: "Modelo Vista Controlador"
+},
+{
+    question: "¿Cuál de las siguientes funciones corresponde a un CRM con enfoque analítico?",
+    options: [
+        "Analiza la información existente, diseña campañas de marketing y permite modificar la estrategia",
+        "Coordina la producción y logística",
+        "Controla el inventario y transporte",
+        "Gestiona contabilidad y finanzas"
+    ],
+    correct: "Analiza la información existente, diseña campañas de marketing y permite modificar la estrategia"
+},
+{
+    question: "¿Cuál de estos NO es un ERP?",
+    options: ["OpenERP", "ODOO", "SAP", "DPF"],
+    correct: "DPF"
+},
+{
+    question: "¿Cuál de estos módulos ERP está enfocado en la gestión de suministros?",
+    options: ["SCM", "HRM", "FRM", "CRM"],
+    correct: "SCM"
+},
+{
+    question: "¿Por qué elemento no está formado el ERP?",
+    options: ["MRP", "SCM", "PRP", "CRM"],
+    correct: "PRP"
+},
+{
+    question: "¿Qué partes forman un CRM?",
+    options: ["Lógica Operacional y Analítica", "Lógica Operacional y Administrativa", "Lógica Matemática y Formal", "Lógica Analítica y de Primer Orden"],
+    correct: "Lógica Operacional y Analítica"
+},
+{
+    question: "¿En qué década apareció el PC?",
+    options: ["70", "80", "90", "2000"],
+    correct: "80"
+},
+{
+    question: "¿Qué implementación no aparece en el sistema de producción?",
+    options: ["Empuje", "Arrastre", "Aplazamiento", "Aparcamiento"],
+    correct: "Aparcamiento"
+},
+{
+    question: "¿Sistemas de ERPs actuales?",
+    options: ["SAP, Oracle, Microsoft, OpenBravo, OpenERP (2025) ESP", "IFS, Oracle, SAP, OpenBravo, PLEX", "Sage, SAP, Oracle, IFS, Microsoft", "PLEX, Microsoft, Sage, SAP, Oracle"],
+    correct: "Sage, SAP, Oracle, IFS, Microsoft"
+},
+{
+    question: "¿Qué factor no debe tener mi sistema ERP para mi empresa?",
+    options: ["Que dé soporte a todas las áreas que la empresa necesita", "Que haga uso de estándares establecidos", "Migración y adaptación de forma rápida y sencilla", "Que no sea fácil de usar"],
+    correct: "Que no sea fácil de usar"
+},
+{
+    question: "Señala la opción incorrecta. Comparativa OpenBravo vs OpenERP",
+    options: ["Mayor cantidad de módulos libres para OpenBravo que para OpenERP", "OpenERP sigue la filosofía de software libre, mientras que OpenBravo ha ocultado su código, como buen software privativo", "En el patrón MVC de Openbravo se desplaza gran parte de la lógica a la capa de acceso a datos y esto genera varios problemas", "En OpenERP no existe código en base de datos, por lo que la independencia de base de datos es mucho más fácil de conseguir"],
+    correct: "OpenERP sigue la filosofía de software libre, mientras que OpenBravo ha ocultado su código, como buen software privativo"
+},
+{
+    question: "¿Qué es un CRM?",
+    options: ["Sistema información que da respuesta a los requerimientos de la empresa en la relación con los clientes", "Incorpora todos los mecanismos necesarios para establecer relaciones duraderas y satisfactorias con los clientes.", "Implica todos los departamentos de la empresa pero especialmente ventas, marketing y atención al cliente", "Todas son correctas"],
+    correct: "Todas son correctas"
+},
+{
+    question: "¿Qué es un ERP?",
+    options: ["ERP - Enterprise Resource Planning", "ERP - Enterprise Resource Planes", "ERP - Enterprise Regulation Program", "ERP - Enterprise Resource Program"],
+    correct: "ERP - Enterprise Resource Planning"
+},
+{
+    question: "¿Cómo podemos clasificar los sistemas ERP-CRM?",
+    options: ["Software libre y personales", "Software libre y Propietarios", "Software libre, Propietarios y Mensuales", "Software privado y Propietarios"],
+    correct: "Software libre y Propietarios"
+},
+{
+    question: "¿Cuál de las siguientes NO forma parte de la lógica operacional en un CRM?",
+    options: ["Organización del Call Center.", "Automatización del marketing.", "Gestión del servicio de atención al cliente.", "Diseño de campañas de marketing específicas."],
+    correct: "Diseño de campañas de marketing específicas."
+},
+{
+    question: "¿Cuál de los siguientes NO es uno de los tres componentes principales que forman un sistema de OpenERP?",
+    options: ["El servidor de base de datos.", "El servidor web.", "El sistema de navegación de la aplicación.", "La aplicación del servidor de OpenERP el cual contiene la lógica empresarial."],
+    correct: "El sistema de navegación de la aplicación."
+},
+{
+    question: "¿Cuál de las siguientes NO es una ventaja de usar un ERP?",
+    options: ["Facilita el acceso de la información.", "Reducción de costes empresariales.", "Aumenta la eficiencia operativa.", "No se requieren recursos adicionales."],
+    correct: "No se requieren recursos adicionales."
+},
+{
+    question: "¿De qué están formados los ERP?",
+    options: ["elementos que pueden generar beneficios en la empresa", "elementos que generan beneficios antes de la creación de la empresa", "elementos que generan beneficios a los clientes", "elementos que generan beneficios una vez que la empresa cierra"],
+    correct: "elementos que pueden generar beneficios en la empresa"
+},
+{
+    question: "¿Cuál no pertenece a la lógica operacional de un CRM?",
+    options: ["Automatización de las ventas organizando la información del mercado, productos y clientes.", "Automatización del marketing, para gestionar campañas, identificar las oportunidades y medición de las ganancias o pérdidas.", "Organización del Call Center.", "Análisis de la información existente."],
+    correct: "Análisis de la información existente."
+},
+{
+    question: "¿Cuál es una ventaja de usar un ERP?",
+    options: ["Se requieren recursos para la adquisición e implantación de un sistema ERP, como la consultoría previa y los costes de adaptación de las funcionalidades a medida", "Existen los costes de actualizaciones y mantenimiento del sistema una vez puesto en marcha", "Requieren una nueva manera de hacer negocios y de trabajar y organizarse dentro de la empresa, por lo que el cambio puede afectar.", "Reducción de costes empresariales"],
+    correct: "Reducción de costes empresariales"
+},
+{
+    question: "¿Qué tipo de arquitectura usa un sistema ERP-CRM?",
+    options: ["Cliente-Servidor", "Punto a Punto (P2P)", "Modelo Vista Controlador (MVC)", "Arquitectura Monolítica"],
+    correct: "Cliente-Servidor"
+},
+{
+    question: "¿Cuál de las siguientes afirmaciones describe mejor a un sistema ERP?",
+    options: ["Es un sistema informático modular que integra procesos internos y externos, compartiendo información en tiempo real.", "Es una herramienta exclusiva para grandes empresas que no se adapta a PYMES.", "Es un software utilizado únicamente en el área de recursos humanos.", "Es un sistema a papel, donde las empresas anotan todas sus gestiones."],
+    correct: "Es un sistema informático modular que integra procesos internos y externos, compartiendo información en tiempo real."
+},
+{
+    question: "¿Cuál es el objetivo principal de un sistema CRM?",
+    options: ["Gestionar únicamente la contabilidad y finanzas de la empresa.", "Establecer relaciones duraderas y satisfactorias con los clientes.", "Integrar los procesos de producción y logística de la empresa.", "Sustituir la estrategia empresarial y la misión de la organización."],
+    correct: "Establecer relaciones duraderas y satisfactorias con los clientes."
+},
+{
+    question: "¿Qué permite el ORM (Object Relational Mapping) en un sistema ERP-CRM?",
+    options: ["Convertir los datos de objetos a un formato adecuado para almacenarlos en una base de datos.", "Sustituir completamente la necesidad de utilizar bases de datos en la empresa.", "Diseñar la interfaz gráfica de usuario para las aplicaciones de la empresa.", "Integrar únicamente los procesos de producción y logística."],
+    correct: "Convertir los datos de objetos a un formato adecuado para almacenarlos en una base de datos."
+},
+{
+    question: "¿Cuáles son las principales características de un sistema ERP?",
+    options: ["Integración de todas las áreas de la empresa, modularidad en su estructura y adaptabilidad a las necesidades empresariales.", "Únicamente modularidad en la gestión de la logística y producción.", "Adaptabilidad a las necesidades de la empresa sin integración ni modularidad.", "Solo integración de las áreas de contabilidad y finanzas, sin modularidad ni adaptabilidad."],
+    correct: "Integración de todas las áreas de la empresa, modularidad en su estructura y adaptabilidad a las necesidades empresariales."
+},
+{
+    question: "¿Cuál de las siguientes afirmaciones describe mejor la arquitectura de un ERP actual?",
+    options: ["Está formado solo por los módulos financieros y contables, sin considerar otras áreas de la empresa.", "Se centra únicamente en la logística y en la producción, dejando fuera la gestión comercial.", "Incluye todos los elementos que pueden generar beneficios internos y externos, recogiendo, tratando y presentando la información a distintos niveles y en diferentes aspectos.", "Únicamente gestiona la relación con los clientes sin procesar la información interna de la empresa."],
+    correct: "Incluye todos los elementos que pueden generar beneficios internos y externos, recogiendo, tratando y presentando la información a distintos niveles y en diferentes aspectos."
+},
+{
+    question: "¿Qué no corresponde a la década 00? En la evolución en la informática de gestión empresarial.",
+    options: ["Se añaden sistemas como el CRM, relaciones con clientes, y el SCM, gestión de cadena de suministros.", "Estructura cliente-servidor pasa a ser modelo web cliente-servidor, con acceso a través del navegador web.", "ERP evoluciona al ERP II.", "Usar MRP II para integrar todos los procesos."],
+    correct: "Usar MRP II para integrar todos los procesos."
+},
+{
+    question: "¿Cuál de las siguientes no es una solución para solventar los problemas en la función de compras?",
+    options: ["JIT (Justo a tiempo).", "MRP (Por orden de compra planificada).", "VMI (Gestión de prioridad).", "IF (Investigación Fáctica)."],
+    correct: "IF (Investigación Fáctica)."
+},
+{
+    question: "Señala la respuesta correcta:",
+    options: ["La investigación fáctica es la representación estática del mercado en un momento dado.", "La investigación táctica averigua las razones que tiene el mercado para comprar un producto.", "La investigación de actitudes es la representación estática del mercado en un momento dado.", "La investigación fáctica averigua las razones que tiene el mercado para comprar un producto."],
+    correct: "La investigación fáctica es la representación estática del mercado en un momento dado."
+},
+{
+    question: "¿Cuál de las siguientes no es una decisión estructural?",
+    options: ["Localización de centros.", "Diseño del proceso.", "Gestión de compras.", "Búsqueda de nuevos productos."],
+    correct: "Gestión de compras."
+},
+{
+    question: "¿Cómo podemos detectar las necesidades del mercado?",
+    options: ["Fijando precios de salida altos.", "Realizando un análisis de mercado viendo los elementos más demandados.", "Realizando estrategias de marketing para los productos vendidos.", "Enfocándose en las empresas que crean productos y no en los consumidores."],
+    correct: "Realizando un análisis de mercado viendo los elementos más demandados."
+},
+{
+    question: "¿Qué tipo de factores afectan al Macroentorno?",
+    options: ["Factores tecnológicos, jurídicos y demográficos", "Factores socioculturales, económicos y políticos", "Factores socioculturales y jurídicos", "Factores políticos y demográficos"],
+    correct: "Factores socioculturales, económicos y políticos"
+},
+{
+    question: "¿Cuál de los siguientes factores no es considerado al diseñar una estrategia de producto?",
+    options: ["Precio", "Calidad", "Publicidad", "Tamaño del departamento de marketing"],
+    correct: "Tamaño del departamento de marketing"
+},
+{
+    question: "¿Cuáles son los puntos de vista del marketing y de las ventas?",
+    options: ["Investigación fáctica y de actitudes", "Investigación de stock y del mercado", "Todas son correcta", "Investigación del entorno empresarial"],
+    correct: "Investigación fáctica y de actitudes"
+},
+{
+    question: "¿Cuál de las siguientes acciones forma parte de una estrategia de marketing y ventas?",
+    options: ["Fijar un precio de salida y alternar con periodos de rebajas.", "Reducir la producción para disminuir el stock acumulado.", "Optimizar el flujo de materiales en la red de distribución.", "Hacer vídeos en tiktok promocionando lo que vendes."],
+    correct: "Fijar un precio de salida y alternar con periodos de rebajas."
+},
+{
+    question: "¿Por qué la informática juega un papel importante en la gestión empresarial?",
+    options: ["Porque permite el tratamiento automático de la información.", "Porque elimina la necesidad de generar y manejar información.", "Porque así los trabajadores hacen menos cobrando lo mismo.", "Porque solo se utiliza en el área de marketing y ventas."],
+    correct: "Porque permite el tratamiento automático de la información."
+},
+{
+    question: "¿Cuáles son los objetivos principales del área de Marketing y Ventas?",
+    options: ["Aumentar la productividad interna y reducir los costes de fabricación.", "Detectar necesidades de los usuarios y satisfacerlas con productos adecuados, además de realizar abastecimiento, distribución y promoción de bienes.", "Garantizar únicamente la distribución de productos en el mercado nacional.", "Elaborar estrategias financieras y de inversión en nuevos proyectos."],
+    correct: "Detectar necesidades de los usuarios y satisfacerlas con productos adecuados, además de realizar abastecimiento, distribución y promoción de bienes."
+},
+{
+    question: "¿Cuál de las siguientes afirmaciones describe mejor las funciones de la Dirección de Operaciones?",
+    options: ["Se centra únicamente en las estrategias de marketing y detección de necesidades de los clientes.", "Únicamente administra el área de recursos humanos y la calidad de los procesos.", "Gestiona toda la producción, definiendo los elementos necesarios en los procesos productivos y tomando decisiones estructurales e infraestructurales.", "Su función principal es la promoción y distribución de productos finales en el mercado."],
+    correct: "Gestiona toda la producción, definiendo los elementos necesarios en los procesos productivos y tomando decisiones estructurales e infraestructurales."
+},
+{
+    question: "¿Cuál de las siguientes características define a los primeros sistemas ERP?",
+    options: ["Surgieron en los años 90, integrando procesos clave como distribución, finanzas, recursos humanos y proyectos, basándose en MRP II y en un modelo cliente-servidor.", "Solo permitían gestionar inventarios y transporte sin integrar otros procesos de la empresa.", "Fueron creados únicamente para departamentos de contabilidad y finanzas, sin conexión en red.", "Se enfocaban exclusivamente en la relación con clientes (CRM) sin abarcar procesos internos de producción."],
+    correct: "Surgieron en los años 90, integrando procesos clave como distribución, finanzas, recursos humanos y proyectos, basándose en MRP II y en un modelo cliente-servidor."
+},
+{
+    question: "En la Planificación y Gestión del Personal. En la Gestión por Objetivos cuál es la afirmación incorrecta:",
+    options: ["Convierte objetivos personales en parte de los objetivos de la empresa", "Planificar, seguimiento, evaluar", "La importancia está en el conjunto de objetivos a conseguir por el trabajador al finalizar un periodo de tiempo establecido", "No hay ninguna incorrecta"],
+    correct: "No hay ninguna incorrecta"
+},
+{
+    question: "¿Cuál de las siguientes tareas no está relacionada a la gestión de personal?",
+    options: ["Formación durante la vida laboral.", "Desarrollo de puestos de trabajo.", "Acciones de selección de personal.", "Desarrollo de sus capacidades y habilidades."],
+    correct: "Desarrollo de sus capacidades y habilidades."
+},
+{
+    question: "¿Cuál de las siguientes no es una fase de la innovación?",
+    options: ["Definición de objetivos.", "Selección de innovación.", "Anteproyecto.", "Todos son fases de la innovación."],
+    correct: "Todos son fases de la innovación."
+},
+{
+    question: "¿Cuál de las siguientes NO es mencionada como un componente básico de la Gestión Empresarial?",
+    options: ["Finanzas", "Gestión de Personal", "Organización del Stock", "Innovación"],
+    correct: "Organización del Stock"
+},
+{
+    question: "¿Cuál es el objetivo principal de la Gestión de Personal?",
+    options: ["Maximizar los beneficios de la empresa.", "Favorecer la dependencia entre objetivos de la empresa", "Reducir la plantilla para aumentar la eficiencia.", "Hacer que las tareas repetitivas la hagan los empleados de menor nivel."],
+    correct: "Favorecer la dependencia entre objetivos de la empresa"
+},
+{
+    question: "¿Qué herramienta financiera proporciona una instantánea de la situación financiera de la empresa en un momento concreto?",
+    options: ["Cuenta de explotación", "Cuadro de tesorería", "Balance contable", "Presupuesto"],
+    correct: "Balance contable"
+},
+{
+    question: "¿Qué se usa para decidir qué habilidades debe tener un empleado para su puesto?",
+    options: ["Antigüedad en la empresa.", "Motivación, carácter, capacidad, conocimiento y conducta.", "Salario actual del empleado.", "Nivel educativo alcanzado."],
+    correct: "Motivación, carácter, capacidad, conocimiento y conducta."
+},
+{
+    question: "¿Cuál es la característica principal de la Gestión por Objetivos?",
+    options: ["Los empleados solo deben seguir órdenes.", "Los empleados deben trabajar para lograr metas claras en un tiempo dado.", "Solo el jefe tiene objetivos.", "No hace falta revisar los resultados."],
+    correct: "Los empleados deben trabajar para lograr metas claras en un tiempo dado."
+},
+{
+    question: "¿Qué característica define la Gestión por Competencias en la planificación y gestión del personal?",
+    options: ["Se centra únicamente en la reducción de costes de personal.", "La toma de decisiones se hace de forma subjetiva, según la opinión del directivo.", "Contribuye al desarrollo personal del empleado dentro de sus capacidades y decisiones objetivas.", "Se limita exclusivamente a la formación técnica del trabajador."],
+    correct: "Contribuye al desarrollo personal del empleado dentro de sus capacidades y decisiones objetivas."
+},
+{
+    question: "¿Cuál de las siguientes opciones describe mejor el objetivo de la Gestión de Personal en la empresa?",
+    options: ["Únicamente la contratación de nuevos empleados.", "La gestión de nóminas y control de costes laborales.", "La organización exclusiva de actividades de ocio y bienestar para los trabajadores.", "Englobar tareas como selección, formación, desarrollo de capacidades, asignación de puestos y seguimiento profesional."],
+    correct: "Englobar tareas como selección, formación, desarrollo de capacidades, asignación de puestos y seguimiento profesional."
+},
+{
+    question: "¿Cuál es el nombre de los factores que afectan individualmente a tu empresa?",
+    options: ["Macroentorno", "Entorno Local", "Microentorno", "Minientorno"],
+    correct: "Microentorno"
+},
+{
+    question: "¿Cuál de estos no es un factor de macroentorno?",
+    options: ["Factor tecnológico", "Factor judicial", "Factor sociocultural", "Factor demográfico"],
+    correct: "Factor judicial"
+},
+{
+    question: "Señala la opción correcta sobre. ¿Qué ideas debe tener claras el empresario?",
+    options: ["Tener un buen Proyecto empresarial y una estrategia para cumplirlo y conseguir las metas propuestas", "Tener en cuenta el tamaño de la empresa y hacerla crecer en su medida correcta para no obtener un aumento de rentabilidad", "El objetivo principal de la producción será siempre el trabajador y el jefe, enfocando todos los departamentos entorno a él", "Adelantar la producción de la mercancía sin estudiar el mercado para aprovecharlo en su beneficio"],
+    correct: "Tener un buen Proyecto empresarial y una estrategia para cumplirlo y conseguir las metas propuestas"
+},
+{
+    question: "¿Cuál no es una de las principales características de la gestión empresarial?",
+    options: ["Una empresa existe siempre y cuando obtenga beneficios.", "Una empresa debe gestionar bien sus recursos para ser competitiva.", "Una empresa no tiene por qué mirar a sus trabajadores.", "El principal objetivo de la empresa es el cliente."],
+    correct: "Una empresa no tiene por qué mirar a sus trabajadores."
+}
+
+            
+        ];
+
+        let shuffledQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questionTextElement = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackElement = document.getElementById('feedback');
+        const nextBtn = document.getElementById('next-btn');
+        const questionCounterElement = document.getElementById('question-counter');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreTextElement = document.getElementById('score-text');
+
+        function startQuiz() {
+            shuffledQuestions = quizData.sort(() => Math.random() - 0.5);
+            currentQuestionIndex = 0;
+            score = 0;
+            resultsContainer.style.display = 'none';
+            quizContainer.style.display = 'block';
+            nextBtn.innerHTML = "Next Question";
+            loadQuestion();
+        }
+        
+        function loadQuestion() {
+            feedbackElement.innerHTML = '';
+            nextBtn.disabled = true;
+            
+            const currentQuestion = shuffledQuestions[currentQuestionIndex];
+            questionTextElement.innerText = currentQuestion.question;
+            questionCounterElement.innerText = `Question ${currentQuestionIndex + 1} of ${shuffledQuestions.length}`;
+
+            optionsContainer.innerHTML = '';
+            currentQuestion.options.forEach(option => {
+                const li = document.createElement('li');
+                li.innerText = option;
+                li.classList.add('option');
+                li.addEventListener('click', () => selectAnswer(li, option, currentQuestion.correct));
+                optionsContainer.appendChild(li);
+            });
+        }
+        
+        function selectAnswer(selectedElement, selectedOption, correctOption) {
+            const options = optionsContainer.getElementsByClassName('option');
+            let answered = false;
+            for(let option of options) {
+                if(option.classList.contains('correct') || option.classList.contains('incorrect')){
+                    answered = true;
+                    break;
+                }
+            }
+
+            if(answered) return;
+
+            if (selectedOption === correctOption) {
+                selectedElement.classList.add('correct');
+                feedbackElement.innerText = "Correct!";
+                feedbackElement.style.color = "#155724";
+                score++;
+            } else {
+                selectedElement.classList.add('incorrect');
+                feedbackElement.innerText = `Wrong! The correct answer was: ${correctOption}`;
+                feedbackElement.style.color = "#721c24";
+                // Also highlight the correct answer
+                 Array.from(options).forEach(option => {
+                    if (option.innerText === correctOption) {
+                        option.classList.add('correct');
+                    }
+                });
+            }
+            
+            nextBtn.disabled = false;
+            if (currentQuestionIndex === shuffledQuestions.length - 1) {
+                nextBtn.innerHTML = "Show Results";
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+             quizContainer.style.display = 'none';
+             resultsContainer.style.display = 'block';
+             scoreTextElement.innerText = `You scored ${score} out of ${shuffledQuestions.length}!`;
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        // Start the quiz on page load
+        startQuiz();
+
+    </script>
+</body>
+</html>
