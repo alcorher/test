@@ -141,6 +141,59 @@
             margin-bottom: 15px;
         }
 
+        #results-details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        #score-text {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #4a69bd;
+            margin-bottom: 10px;
+        }
+
+        #percentage-text {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        #score-breakdown {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        #score-breakdown p {
+            font-size: 1.1em;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #score-breakdown span {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        #correct-count {
+            color: #28a745;
+        }
+
+        #incorrect-count {
+            color: #dc3545;
+        }
+
+        #total-count {
+            color: #4a69bd;
+        }
+
         #results-container button {
             background-color: #4a69bd;
             color: white;
@@ -207,6 +260,27 @@
             #results-container {
                 padding: 15px;
             }
+
+            #results-details {
+                padding: 15px;
+                margin: 15px 0;
+            }
+
+            #score-text {
+                font-size: 1.2em;
+            }
+
+            #percentage-text {
+                font-size: 1.1em;
+            }
+
+            #score-breakdown {
+                padding: 12px;
+            }
+
+            #score-breakdown p {
+                font-size: 1em;
+            }
         }
 
         /* Small Mobile Devices */
@@ -252,6 +326,30 @@
                 margin: 0 8px 12px;
                 padding: 10px;
                 font-size: 0.95em;
+            }
+
+            #results-details {
+                padding: 10px;
+                margin: 10px 0;
+            }
+
+            #score-text {
+                font-size: 1.1em;
+            }
+
+            #percentage-text {
+                font-size: 1em;
+            }
+
+            #score-breakdown {
+                padding: 10px;
+            }
+
+            #score-breakdown p {
+                font-size: 0.9em;
+                flex-direction: column;
+                align-items: center;
+                gap: 5px;
             }
         }
 
@@ -308,9 +406,17 @@
         <button id="next-btn" onclick="nextQuestion()">Next Question</button>
 
         <div id="results-container" style="display: none;">
-            <h2>Quiz Complete!</h2>
-            <p id="score-text"></p>
-            <button onclick="restartQuiz()">Restart Quiz</button>
+            <h2>¡Quiz Completado!</h2>
+            <div id="results-details">
+                <p id="score-text"></p>
+                <p id="percentage-text"></p>
+                <div id="score-breakdown">
+                    <p>✅ Respuestas correctas: <span id="correct-count"></span></p>
+                    <p>❌ Respuestas incorrectas: <span id="incorrect-count"></span></p>
+                    <p>📊 Total de preguntas: <span id="total-count"></span></p>
+                </div>
+            </div>
+            <button onclick="restartQuiz()">Reiniciar Quiz</button>
         </div>
     </div>
 
@@ -928,7 +1034,16 @@
         function showResults() {
              quizContainer.style.display = 'none';
              resultsContainer.style.display = 'block';
-             scoreTextElement.innerText = `You scored ${score} out of ${shuffledQuestions.length}!`;
+             
+             const totalQuestions = shuffledQuestions.length;
+             const incorrectAnswers = totalQuestions - score;
+             const percentage = Math.round((score / totalQuestions) * 100);
+             
+             scoreTextElement.innerText = `Puntuación: ${score}/${totalQuestions}`;
+             document.getElementById('percentage-text').innerText = `Porcentaje: ${percentage}%`;
+             document.getElementById('correct-count').innerText = score;
+             document.getElementById('incorrect-count').innerText = incorrectAnswers;
+             document.getElementById('total-count').innerText = totalQuestions;
         }
 
         function restartQuiz() {
